@@ -17,7 +17,10 @@ export const updateProfile = AsyncErrorHandler(async (req, res, next) => {
     //   await cloudinary.v2.uploader.destroy(user.profileImage.public_id);
     // }
 
-    const uploadedImage = await uploadImages(req.files.profileImage);
+    const profileImage = await replaceImage(
+      book.profileImage.public_id,
+      req.files.profileImage,
+    );
     user.profileImage = uploadedImage;
   }
 

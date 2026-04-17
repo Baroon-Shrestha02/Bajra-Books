@@ -36,13 +36,15 @@ const userSchema = new mongoose.Schema(
     profileImage: {
       public_id: {
         type: String,
-        default: "default_zwcp1h",
       },
       url: {
         type: String,
-        default:
-          "https://res.cloudinary.com/dxu7hzo7w/image/upload/v1772623648/default_zwcp1h.jpg",
       },
+    },
+    role: {
+      type: String,
+      enum: ["user", "admin"],
+      default: "user",
     },
   },
   { timestamps: true },

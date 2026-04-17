@@ -4,6 +4,8 @@ import fileUpload from "express-fileupload";
 import GlobalErrorHandler from "./Middlewares/GlobalErrorHandler.js";
 import authRoutes from "./Routes/AuthRoutes.js";
 import userRoutes from "./Routes/UserRoutes.js";
+import bookRoutes from "./Routes/BooksRoutes.js";
+import offerRoutes from "./Routes/OfferRoutes.js";
 
 const app = express();
 
@@ -26,6 +28,8 @@ app.use(
 
 app.use("/api/auth", authRoutes);
 app.use("/api/user", userRoutes);
+app.use("/api/book", bookRoutes);
+app.use("/api/offer", offerRoutes);
 
 app.use(GlobalErrorHandler);
 
