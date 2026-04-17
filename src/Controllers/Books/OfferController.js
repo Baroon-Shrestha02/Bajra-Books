@@ -77,6 +77,166 @@ export const createOffer = AsyncErrorHandler(async (req, res, next) => {
   });
 });
 
-export const getOffer = AsyncErrorHandler(async (req, res, next) => {});
+export const getAllOffers = AsyncErrorHandler(async (req, res, next) => {
+  const now = new Date();
 
-export const updateOffer = AsyncErrorHandler(async (req, res, next) => {});
+  // ─── Auto-expire offers past endDate ──────────────────────────────────────
+
+  const expiredOffers = await Offer.find({
+    endDate: { $lte: now },
+    isActive: true,
+  });
+
+  if (expiredOffers.length > 0) {
+    await Promise.all(
+      expiredOffers.map(async (offer) => {
+        await Books.updateMany(
+          { _id: { $in: offer.books } },
+          {
+            $set: {
+              "offer.isOnOffer": false,
+              "offer.offerDiscount": 0,
+              "offer.offerPrice": null,
+              "offer.offerId": null,
+            },
+          },
+        );
+        offer.isActive = false;
+        return offer.save();
+      }),
+    );
+  }
+
+  // ─── Fetch All Offers ─────────────────────────────────────────────────────
+
+  const offers = await Offer.find().populate(
+    "books",
+    "title author price offer cover_Img",
+  );
+
+  res.status(200).json({
+    success: true,
+    total: offers.length,
+    offers,
+  });
+});
+
+export const getSingleOffer = AsyncErrorHandler(async (req, res, next) => {
+  const offer = await Offer.findById(req.params.id).populate(
+    "books",
+    "title author original_price price offer cover_Img genre category",
+  );
+
+  if (!offer) return next(new AppError("Offer not found.", 404));
+
+  // ─── Check if expired ─────────────────────────────────────────────────────
+
+  if (offer.isActive && new Date(offer.endDate) <= new Date()) {
+    await Books.updateMany(
+      { _id: { $in: offer.books } },
+      {
+        $set: {
+          "offer.isOnOffer": false,
+          "offer.offerDiscount": 0,
+          "offer.offerPrice": null,
+          "offer.offerId": null,
+        },
+      },
+    );
+    offer.isActive = false;
+    await offer.save();
+  }
+
+  res.status(200).json({
+    success: true,
+    offer,
+  });
+});
+
+export const updateOffer = AsyncErrorHandler(async (req, res, next) => {
+  const { id } = req.params;
+  const { name, type, discount, addBookIds, removeBookIds, endDate } = req.body;
+
+  // ─── Find Offer ───────────────────────────────────────────────────────────
+
+  const offer = await Offer.findById(id);
+  if (!offer) return next(new AppError("Offer not found.", 404));
+  if (!offer.isActive)
+    return next(new AppError("Cannot update an expired offer.", 400));
+
+  // ─── Remove Books from Offer ──────────────────────────────────────────────
+
+  if (removeBookIds && removeBookIds.length > 0) {
+    const booksToRemove = await Books.find({ _id: { $in: removeBookIds } });
+
+    await Promise.all(
+      booksToRemove.map((book) => {
+        book.offer.isOnOffer = false;
+        book.offer.offerDiscount = 0;
+        book.offer.offerPrice = null;
+        book.offer.offerId = null;
+        return book.save();
+      }),
+    );
+
+    offer.books = offer.books.filter(
+      (bookId) => !removeBookIds.includes(bookId.toString()),
+    );
+  }
+
+  // ─── Add New Books to Offer ───────────────────────────────────────────────
+
+  if (addBookIds && addBookIds.length > 0) {
+    const existingIds = offer.books.map((b) => b.toString());
+    const duplicates = addBookIds.filter((id) => existingIds.includes(id));
+
+    if (duplicates.length > 0) {
+      return next(
+        new AppError(`Books already in offer: ${duplicates.join(", ")}`, 400),
+      );
+    }
+
+    const booksToAdd = await Books.find({ _id: { $in: addBookIds } });
+
+    if (booksToAdd.length !== addBookIds.length) {
+      return next(new AppError("One or more book IDs not found.", 404));
+    }
+
+    await Promise.all(
+      booksToAdd.map((book) => {
+        book.offer.isOnOffer = true;
+        book.offer.offerDiscount = offer.discount;
+        book.offer.offerId = offer._id;
+        return book.save(); // triggers pre("save") → recalculates offerPrice
+      }),
+    );
+
+    offer.books.push(...addBookIds);
+  }
+
+  // ─── Update Other Fields if provided ─────────────────────────────────────
+
+  if (name) offer.name = name;
+  if (type) offer.type = type;
+  if (endDate) offer.endDate = new Date(endDate);
+  if (discount !== undefined) {
+    offer.discount = Number(discount);
+
+    // re-apply new discount to all books in offer
+    const allBooks = await Books.find({ _id: { $in: offer.books } });
+    await Promise.all(
+      allBooks.map((book) => {
+        book.offer.offerDiscount = Number(discount);
+        return book.save();
+      }),
+    );
+  }
+
+  await offer.save();
+
+  res.status(200).json({
+    success: true,
+    message: "Offer updated successfully.",
+    offer,
+  });
+});

@@ -27,6 +27,9 @@ const BooksSchema = new mongoose.Schema(
       required: true,
       trim: true,
     },
+    ISBN: {
+      type: Number,
+    },
     description: {
       type: String,
       required: true,
