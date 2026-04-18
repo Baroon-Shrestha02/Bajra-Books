@@ -6,6 +6,9 @@ import authRoutes from "./Routes/AuthRoutes.js";
 import userRoutes from "./Routes/UserRoutes.js";
 import bookRoutes from "./Routes/BooksRoutes.js";
 import offerRoutes from "./Routes/OfferRoutes.js";
+import cartRoutes from "./Routes/CartRoutes.js";
+import orderRoutes from "./Routes/OrderRoutes.js";
+
 import expireOffers from "./Utils/ExpireOffers.js";
 
 const app = express();
@@ -27,12 +30,14 @@ app.use(
   }),
 );
 
-app.use(expireOffers);
+// app.use(expireOffers);
 
 app.use("/api/auth", authRoutes);
 app.use("/api/user", userRoutes);
 app.use("/api/book", bookRoutes);
 app.use("/api/offer", offerRoutes);
+app.use("/api/cart", cartRoutes);
+app.use("/api/order", orderRoutes);
 
 app.use(GlobalErrorHandler);
 

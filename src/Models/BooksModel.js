@@ -22,13 +22,16 @@ const BooksSchema = new mongoose.Schema(
       required: true,
       trim: true,
     },
+    isbn: {
+      type: String,
+      required: true,
+      unique: true,
+      trim: true,
+    },
     title: {
       type: String,
       required: true,
       trim: true,
-    },
-    ISBN: {
-      type: Number,
     },
     description: {
       type: String,
@@ -80,6 +83,12 @@ const BooksSchema = new mongoose.Schema(
       default: "general",
       lowercase: true,
       trim: true,
+    },
+
+    weight: {
+      type: Number,
+      required: true,
+      default: 300, // grams
     },
   },
   { timestamps: true },

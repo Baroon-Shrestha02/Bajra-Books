@@ -7,17 +7,16 @@ const wishSchema = new mongoose.Schema(
       ref: "User",
       required: true,
     },
-    BookId: {
+    bookId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Books",
       required: true,
     },
   },
   { timestamps: true },
-); // Optional: Add timestamps for creation/updated tracking
+);
 
-// Prevent a user from favoriting the same product multiple times
-wishSchema.index({ userId: 1, productId: 1 }, { unique: true });
+// wishSchema.index({ userId: 1, productId: 1 }, { unique: true });
 
 const Wishlist = mongoose.model("Wishlist", wishSchema);
 

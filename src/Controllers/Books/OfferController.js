@@ -157,14 +157,10 @@ export const updateOffer = AsyncErrorHandler(async (req, res, next) => {
   const { id } = req.params;
   const { name, type, discount, addBookIds, removeBookIds, endDate } = req.body;
 
-  // ─── Find Offer ───────────────────────────────────────────────────────────
-
   const offer = await Offer.findById(id);
   if (!offer) return next(new AppError("Offer not found.", 404));
   if (!offer.isActive)
     return next(new AppError("Cannot update an expired offer.", 400));
-
-  // ─── Remove Books from Offer ──────────────────────────────────────────────
 
   if (removeBookIds && removeBookIds.length > 0) {
     const booksToRemove = await Books.find({ _id: { $in: removeBookIds } });
@@ -183,8 +179,6 @@ export const updateOffer = AsyncErrorHandler(async (req, res, next) => {
       (bookId) => !removeBookIds.includes(bookId.toString()),
     );
   }
-
-  // ─── Add New Books to Offer ───────────────────────────────────────────────
 
   if (addBookIds && addBookIds.length > 0) {
     const existingIds = offer.books.map((b) => b.toString());
@@ -207,14 +201,12 @@ export const updateOffer = AsyncErrorHandler(async (req, res, next) => {
         book.offer.isOnOffer = true;
         book.offer.offerDiscount = offer.discount;
         book.offer.offerId = offer._id;
-        return book.save(); // triggers pre("save") → recalculates offerPrice
+        return book.save();
       }),
     );
 
     offer.books.push(...addBookIds);
   }
-
-  // ─── Update Other Fields if provided ─────────────────────────────────────
 
   if (name) offer.name = name;
   if (type) offer.type = type;
@@ -222,7 +214,6 @@ export const updateOffer = AsyncErrorHandler(async (req, res, next) => {
   if (discount !== undefined) {
     offer.discount = Number(discount);
 
-    // re-apply new discount to all books in offer
     const allBooks = await Books.find({ _id: { $in: offer.books } });
     await Promise.all(
       allBooks.map((book) => {
