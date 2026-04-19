@@ -51,9 +51,7 @@
   "paths": {
     "/auth/login": {
       "post": {
-        "tags": [
-          "Auth"
-        ],
+        "tags": ["Auth"],
         "summary": "Login user",
         "requestBody": {
           "required": true,
@@ -82,9 +80,7 @@
     },
     "/auth/register": {
       "post": {
-        "tags": [
-          "Auth"
-        ],
+        "tags": ["Auth"],
         "summary": "Register user",
         "requestBody": {
           "required": true,
@@ -122,9 +118,7 @@
     },
     "/auth/logout": {
       "post": {
-        "tags": [
-          "Auth"
-        ],
+        "tags": ["Auth"],
         "summary": "Logout user",
         "security": [
           {
@@ -140,9 +134,7 @@
     },
     "/auth/logged-user": {
       "get": {
-        "tags": [
-          "Auth"
-        ],
+        "tags": ["Auth"],
         "summary": "Get logged in user",
         "security": [
           {
@@ -158,9 +150,7 @@
     },
     "/book": {
       "get": {
-        "tags": [
-          "Books"
-        ],
+        "tags": ["Books"],
         "summary": "Get all books",
         "parameters": [
           {
@@ -236,9 +226,7 @@
     },
     "/book/add": {
       "post": {
-        "tags": [
-          "Books"
-        ],
+        "tags": ["Books"],
         "summary": "Add a new book (admin)",
         "security": [
           {
@@ -300,9 +288,7 @@
     },
     "/book/delete/{id}": {
       "delete": {
-        "tags": [
-          "Books"
-        ],
+        "tags": ["Books"],
         "summary": "Delete a book (admin)",
         "security": [
           {
@@ -328,9 +314,7 @@
     },
     "/book/update/{id}": {
       "patch": {
-        "tags": [
-          "Books"
-        ],
+        "tags": ["Books"],
         "summary": "Update a book (admin)",
         "security": [
           {
@@ -401,9 +385,7 @@
     },
     "/book/add-fav/{id}": {
       "post": {
-        "tags": [
-          "User"
-        ],
+        "tags": ["User"],
         "summary": "Toggle book in wishlist (user)",
         "security": [
           {
@@ -429,9 +411,7 @@
     },
     "/book/get-fav": {
       "get": {
-        "tags": [
-          "User"
-        ],
+        "tags": ["User"],
         "summary": "Get wishlist (user)",
         "security": [
           {
@@ -447,9 +427,7 @@
     },
     "/cart/add/{id}": {
       "post": {
-        "tags": [
-          "Cart"
-        ],
+        "tags": ["Cart"],
         "summary": "Add book to cart",
         "security": [
           {
@@ -489,9 +467,7 @@
     },
     "/cart": {
       "get": {
-        "tags": [
-          "Cart"
-        ],
+        "tags": ["Cart"],
         "summary": "Get cart",
         "security": [
           {
@@ -507,9 +483,7 @@
     },
     "/cart/update/{id}": {
       "patch": {
-        "tags": [
-          "Cart"
-        ],
+        "tags": ["Cart"],
         "summary": "Update cart quantity",
         "security": [
           {
@@ -549,9 +523,7 @@
     },
     "/cart/remove/{id}": {
       "delete": {
-        "tags": [
-          "Cart"
-        ],
+        "tags": ["Cart"],
         "summary": "Remove book from cart",
         "security": [
           {
@@ -577,9 +549,7 @@
     },
     "/cart/clear": {
       "delete": {
-        "tags": [
-          "Cart"
-        ],
+        "tags": ["Cart"],
         "summary": "Clear cart",
         "security": [
           {
@@ -595,9 +565,7 @@
     },
     "/offer/create": {
       "post": {
-        "tags": [
-          "Offers"
-        ],
+        "tags": ["Offers"],
         "summary": "Create an offer (admin)",
         "security": [
           {
@@ -616,11 +584,7 @@
                   },
                   "type": {
                     "type": "string",
-                    "enum": [
-                      "stock-clearance",
-                      "festive",
-                      "custom"
-                    ]
+                    "enum": ["stock-clearance", "festive", "custom"]
                   },
                   "discount": {
                     "type": "number"
@@ -651,9 +615,7 @@
     },
     "/offer": {
       "get": {
-        "tags": [
-          "Offers"
-        ],
+        "tags": ["Offers"],
         "summary": "Get all offers",
         "responses": {
           "200": {
@@ -664,9 +626,7 @@
     },
     "/offer/{id}": {
       "get": {
-        "tags": [
-          "Offers"
-        ],
+        "tags": ["Offers"],
         "summary": "Get single offer",
         "parameters": [
           {
@@ -687,9 +647,7 @@
     },
     "/offer/update/{id}": {
       "patch": {
-        "tags": [
-          "Offers"
-        ],
+        "tags": ["Offers"],
         "summary": "Update offer (admin)",
         "security": [
           {
@@ -717,11 +675,7 @@
                   },
                   "type": {
                     "type": "string",
-                    "enum": [
-                      "stock-clearance",
-                      "festive",
-                      "custom"
-                    ]
+                    "enum": ["stock-clearance", "festive", "custom"]
                   },
                   "discount": {
                     "type": "number"
@@ -755,9 +709,7 @@
     },
     "/order/place": {
       "post": {
-        "tags": [
-          "Orders"
-        ],
+        "tags": ["Orders"],
         "summary": "Place an order",
         "security": [
           {
@@ -782,10 +734,7 @@
                   },
                   "paymentMethod": {
                     "type": "string",
-                    "enum": [
-                      "esewa",
-                      "khalti"
-                    ]
+                    "enum": ["esewa", "khalti"]
                   },
                   "alternativePhone": {
                     "type": "string"
@@ -808,9 +757,7 @@
     },
     "/order/get-my-orders": {
       "get": {
-        "tags": [
-          "User"
-        ],
+        "tags": ["User"],
         "summary": "Get my orders",
         "security": [
           {
@@ -826,9 +773,7 @@
     },
     "/order/all": {
       "get": {
-        "tags": [
-          "Orders"
-        ],
+        "tags": ["Orders"],
         "summary": "Get all orders (admin)",
         "security": [
           {
@@ -855,10 +800,7 @@
             "name": "paymentMethod",
             "schema": {
               "type": "string",
-              "enum": [
-                "esewa",
-                "khalti"
-              ]
+              "enum": ["esewa", "khalti"]
             }
           },
           {
@@ -885,9 +827,7 @@
     },
     "/order/verify-payment/{id}": {
       "patch": {
-        "tags": [
-          "Orders"
-        ],
+        "tags": ["Orders"],
         "summary": "Verify payment (admin)",
         "security": [
           {
@@ -913,10 +853,7 @@
                 "properties": {
                   "paymentStatus": {
                     "type": "string",
-                    "enum": [
-                      "paid",
-                      "rejected"
-                    ]
+                    "enum": ["paid", "rejected"]
                   },
                   "note": {
                     "type": "string"
@@ -935,9 +872,7 @@
     },
     "/order/update/{id}": {
       "patch": {
-        "tags": [
-          "Orders"
-        ],
+        "tags": ["Orders"],
         "summary": "Update order status (admin)",
         "security": [
           {
@@ -963,11 +898,7 @@
                 "properties": {
                   "status": {
                     "type": "string",
-                    "enum": [
-                      "dispatched",
-                      "delivered",
-                      "cancelled"
-                    ]
+                    "enum": ["dispatched", "delivered", "cancelled"]
                   },
                   "note": {
                     "type": "string"
@@ -986,9 +917,7 @@
     },
     "/user/update-profile": {
       "patch": {
-        "tags": [
-          "User"
-        ],
+        "tags": ["User"],
         "summary": "Update user profile",
         "security": [
           {
