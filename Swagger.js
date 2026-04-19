@@ -21,6 +21,10 @@ const options = {
         url: "http://localhost:3000/api",
         description: "Development server",
       },
+      {
+        url: "https://bajra-books.onrender.com/api",
+        description: "Hosted Production Testing server",
+      },
     ],
     components: {
       securitySchemes: {
