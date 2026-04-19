@@ -241,11 +241,11 @@ export const wishList = AsyncErrorHandler(async (req, res, next) => {
   const userId = req.user._id ?? req.user.id;
   const { id: bookId } = req.params;
 
-  if (!bookId) return next(new AppError("Product ID is required.", 400));
+  if (!bookId) return next(new AppError("Book ID is required.", 400));
   // Verify product exists before touching the wishlist
   const productExists = await Books.exists({ _id: bookId });
 
-  if (!productExists) return next(new AppError("Product not found.", 404));
+  if (!productExists) return next(new AppError("Book not found.", 404));
 
   const existingFavourite = await Wishlist.findOne({ userId, bookId });
 
@@ -253,7 +253,7 @@ export const wishList = AsyncErrorHandler(async (req, res, next) => {
     await existingFavourite.deleteOne(); // avoids second DB round-trip
     return res.status(200).json({
       success: true,
-      message: "Product removed from favorites.",
+      message: "Book removed from favorites.",
     });
   }
 
@@ -261,7 +261,7 @@ export const wishList = AsyncErrorHandler(async (req, res, next) => {
 
   return res.status(201).json({
     success: true,
-    message: "Product added to favorites.",
+    message: "Book added to favorites.",
   });
 });
 

@@ -1,7 +1,7 @@
 import AppError from "../Middlewares/AppError.js";
 import AsyncErrorHandler from "../Middlewares/AsyncErrorHandler.js";
 import User from "../Models/UserModel.js";
-import { uploadImages } from "../Utils/ImageUploader.js";
+import { replaceImage, uploadImages } from "../Utils/ImageUploader.js";
 
 export const updateProfile = AsyncErrorHandler(async (req, res, next) => {
   const userId = req.user.id;
@@ -11,20 +11,25 @@ export const updateProfile = AsyncErrorHandler(async (req, res, next) => {
   const user = await User.findById(userId);
   if (!user) return next(new AppError("User not found", 404));
 
-  // update profile image
-  if (req.files && req.files.profileImage) {
-    // if (user.profileImage && user.profImg.public_id) {
-    //   await cloudinary.v2.uploader.destroy(user.profileImage.public_id);
-    // }
+  // ─── Update Profile Image ─────────────────────────────────────────────────
 
-    const profileImage = await replaceImage(
-      book.profileImage.public_id,
-      req.files.profileImage,
-    );
-    user.profileImage = uploadedImage;
+  if (req.files?.profileImage) {
+    const profileImage = user.profileImage?.public_id
+      ? await replaceImage(user.profileImage.public_id, req.files.profileImage)
+      : await uploadImages(req.files.profileImage);
+
+    if (!profileImage?.url) {
+      return next(new AppError("Image upload failed", 500));
+    }
+
+    user.profileImage = {
+      public_id: profileImage.public_id,
+      url: profileImage.url,
+    };
   }
 
-  // update fields if provided
+  // ─── Update Fields ────────────────────────────────────────────────────────
+
   if (firstname) user.firstname = firstname;
   if (middlename) user.middlename = middlename;
   if (lastname) user.lastname = lastname;
