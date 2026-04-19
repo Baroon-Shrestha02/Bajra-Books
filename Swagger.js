@@ -18,12 +18,12 @@ const options = {
     },
     servers: [
       {
-        url: "http://localhost:3000/api",
-        description: "Development server",
-      },
-      {
         url: "https://bajra-books.onrender.com/api",
         description: "Hosted Production Testing server",
+      },
+      {
+        url: "http://localhost:3000/api",
+        description: "Development server",
       },
     ],
     components: {
