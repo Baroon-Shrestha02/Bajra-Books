@@ -178,7 +178,7 @@ router.patch("/book/update/:id", protect, restrictTo("admin"), updateBook);
  * @swagger
  * /book/add-fav/{id}:
  *   post:
- *     tags: [User]
+ *     tags: [Books]
  *     summary: Toggle book in wishlist (user)
  *     security:
  *       - bearerAuth: []
