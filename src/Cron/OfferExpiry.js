@@ -6,10 +6,9 @@ import Books from "../Models/BooksModel.js";
 
 const CHUNK_SIZE = 10;
 
-// cron.schedule("0 * * * *", async () => { for 1 hour
-
-// runs every 5 minutes
-cron.schedule("*/5 * * * *", async () => {
+cron.schedule("0 * * * *", async () => {
+  // runs every 5 minutes
+  // cron.schedule("*/5 * * * *", async () => {
   try {
     const now = new Date();
     console.log(`🕐 Cron running at ${now.toISOString()}`);

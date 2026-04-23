@@ -44,3 +44,12 @@ export const updateProfile = AsyncErrorHandler(async (req, res, next) => {
     user,
   });
 });
+
+export const getAllUsers = AsyncErrorHandler(async (req, res, next) => {
+  const allUsers = await User.find();
+
+  res.status(200).json({
+    sucess: true,
+    allUsers,
+  });
+});

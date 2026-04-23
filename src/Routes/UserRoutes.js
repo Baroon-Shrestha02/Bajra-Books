@@ -1,6 +1,7 @@
 import express from "express";
 import { protect } from "../Middlewares/VerifyUser.js";
-import { updateProfile } from "../Controllers/UserController.js";
+import { getAllUsers, updateProfile } from "../Controllers/UserController.js";
+import { restrictTo } from "../Middlewares/RestictAccess.js";
 
 const router = express.Router();
 
@@ -36,5 +37,19 @@ const router = express.Router();
  *         description: OK
  */
 router.patch("/user/update-profile", protect, updateProfile);
+
+/**
+ * @swagger
+ * /user:
+ *   get:
+ *     tags: [User]
+ *     summary: Get all users
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: OK
+ */
+router.get("/user/", protect, restrictTo("admin"), getAllUsers);
 
 export default router;
