@@ -3,28 +3,42 @@ import AsyncErrorHandler from "../Middlewares/AsyncErrorHandler.js";
 import Books from "../Models/BooksModel.js";
 import Cart from "../Models/CartModel.js";
 import Order from "../Models/OrderModel.js";
+import Promo from "../Models/PromoModel.js";
 import User from "../Models/UserModel.js";
 import { calculateDeliveryCharge } from "../Utils/DeliveryCharge.js";
 import { uploadImages } from "../Utils/ImageUploader.js";
 
+// ─── OrderController.js — placeOrder only ────────────────────────────────────
+
 export const placeOrder = AsyncErrorHandler(async (req, res, next) => {
   const userId = req.user._id ?? req.user.id;
 
-  const { alternativePhone, district, city, street, paymentMethod } = req.body;
+  const {
+    alternativePhone,
+    district,
+    city,
+    tole,
+    landmark,
+    houseNo,
+    paymentMethod,
+    couponCode,     // ← fixed: was "promo" causing variable conflict
+  } = req.body;
 
-  if (!district || !city) {
-    return next(new AppError("Delivery address is required.", 400));
+  // ─── Validate ─────────────────────────────────────────────────────────────
+
+  if (!district || !city || !tole) {
+    return next(new AppError("district, city and tole are required.", 400));
   }
 
-  if (!paymentMethod || !["esewa", "khalti"].includes(paymentMethod)) {
-    return next(
-      new AppError("Payment method must be 'esewa' or 'khalti'.", 400),
-    );
+  if (!paymentMethod || !["esewa", "khalti", "fonepay"].includes(paymentMethod)) {
+    return next(new AppError("Payment method must be 'esewa', 'khalti' or 'fonepay'.", 400));
   }
 
   if (!req.files?.screenshot) {
     return next(new AppError("Payment screenshot is required.", 400));
   }
+
+  // ─── Fetch User & Cart ────────────────────────────────────────────────────
 
   const user = await User.findById(userId);
   if (!user) return next(new AppError("User not found.", 404));
@@ -34,23 +48,14 @@ export const placeOrder = AsyncErrorHandler(async (req, res, next) => {
     return next(new AppError("Your cart is empty.", 400));
   }
 
-  // ─── Validate Stock & Build Snapshot ─────────────────────────────────────
+  // ─── Validate Stock ───────────────────────────────────────────────────────
 
   for (const item of cart.books) {
     const book = item.bookId;
-
-    if (!book) {
-      return next(
-        new AppError("One or more books in cart no longer exist.", 400),
-      );
-    }
-
+    if (!book) return next(new AppError("One or more books in cart no longer exist.", 400));
     if (item.quantity > book.stock) {
       return next(
-        new AppError(
-          `"${book.title}" only has ${book.stock} item(s) left. Please update your cart.`,
-          400,
-        ),
+        new AppError(`"${book.title}" only has ${book.stock} item(s) left. Please update your cart.`, 400)
       );
     }
   }
@@ -59,10 +64,7 @@ export const placeOrder = AsyncErrorHandler(async (req, res, next) => {
 
   const books = cart.books.map((item) => {
     const book = item.bookId;
-    const effectivePrice = book.offer?.isOnOffer
-      ? book.offer.offerPrice
-      : book.price;
-
+    const effectivePrice = book.offer?.isOnOffer ? book.offer.offerPrice : book.price;
     return {
       bookId: book._id,
       title: book.title,
@@ -74,26 +76,46 @@ export const placeOrder = AsyncErrorHandler(async (req, res, next) => {
     };
   });
 
-  const totalWeight = books.reduce(
-    (acc, item) => acc + item.weight * item.quantity,
-    0,
-  );
+  // ─── Calculate Weight & Delivery ─────────────────────────────────────────
 
-  const { zone, deliveryCharge } = calculateDeliveryCharge(
-    district,
-    totalWeight,
-  );
+  const totalWeight = books.reduce((acc, item) => acc + item.weight * item.quantity, 0);
+  const { zone, deliveryCharge } = calculateDeliveryCharge(district, totalWeight);
+  const totalPrice = parseFloat(books.reduce((acc, item) => acc + item.subtotal, 0).toFixed(2));
 
-  const totalPrice = parseFloat(
-    books.reduce((acc, item) => acc + item.subtotal, 0).toFixed(2),
-  );
+  let grandTotal = parseFloat((totalPrice + deliveryCharge).toFixed(2));
 
-  const grandTotal = parseFloat((totalPrice + deliveryCharge).toFixed(2));
+  // ─── Apply Promo Code ─────────────────────────────────────────────────────
+
+  let promoDetails = { code: null, discount: 0, savings: 0 };
+
+  if (couponCode) {
+    const promoDoc = await Promo.findOne({ couponCode: couponCode.toUpperCase() });
+
+    if (!promoDoc) return next(new AppError("Invalid promo code.", 400));
+    if (!promoDoc.isActive) return next(new AppError("Promo code is no longer active.", 400));
+    if (promoDoc.maxUses !== null && promoDoc.usedCount >= promoDoc.maxUses) {
+      return next(new AppError("Promo code has reached its maximum uses.", 400));
+    }
+
+    const savings = parseFloat((grandTotal * promoDoc.discount / 100).toFixed(2));
+    grandTotal = parseFloat((grandTotal - savings).toFixed(2));
+
+    promoDetails = {
+      code: promoDoc.couponCode,
+      discount: promoDoc.discount,
+      savings,
+    };
+
+    promoDoc.usedCount += 1;
+    await promoDoc.save();
+  }
+
+  // ─── Upload Screenshot ────────────────────────────────────────────────────
 
   const uploaded = await uploadImages(req.files.screenshot);
-  if (!uploaded?.url) {
-    return next(new AppError("Screenshot upload failed.", 500));
-  }
+  if (!uploaded?.url) return next(new AppError("Screenshot upload failed.", 500));
+
+  // ─── Create Order ─────────────────────────────────────────────────────────
 
   const order = await Order.create({
     userId,
@@ -105,10 +127,11 @@ export const placeOrder = AsyncErrorHandler(async (req, res, next) => {
       alternativePhone: alternativePhone || null,
     },
     deliveryAddress: {
-      zone,
       district,
       city,
-      street,
+      tole,
+      landmark: landmark || null,
+      houseNo: houseNo || null,
     },
     books,
     totalPrice,
@@ -117,6 +140,7 @@ export const placeOrder = AsyncErrorHandler(async (req, res, next) => {
       weightInGrams: totalWeight,
       charge: deliveryCharge,
     },
+    promo: promoDetails,
     grandTotal,
     payment: {
       method: paymentMethod,

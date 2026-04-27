@@ -17,22 +17,16 @@ const orderSchema = new mongoose.Schema(
     },
 
     deliveryAddress: {
-      zone: {
-        type: String,
-        enum: ["kathmandu", "outside_valley", "remote"],
-        required: true,
-      },
       district: { type: String, required: true, trim: true },
       city: { type: String, required: true, trim: true },
-      street: { type: String, trim: true },
+      tole: { type: String, required: true, trim: true },
+      landmark: { type: String, trim: true, default: null },
+      houseNo: { type: String, trim: true, default: null },
     },
 
     books: [
       {
-        bookId: {
-          type: mongoose.Schema.Types.ObjectId,
-          ref: "Books",
-        },
+        bookId: { type: mongoose.Schema.Types.ObjectId, ref: "Books" },
         title: { type: String, required: true },
         author: { type: String, required: true },
         price: { type: Number, required: true },
@@ -45,9 +39,15 @@ const orderSchema = new mongoose.Schema(
     totalPrice: { type: Number, required: true },
 
     delivery: {
-      zone: { type: String },
+      zone: { type: String, enum: ["kathmandu", "outside_valley", "remote"] },
       weightInGrams: { type: Number },
       charge: { type: Number, default: 0 },
+    },
+
+    promo: {
+      code: { type: String, default: null },
+      discount: { type: Number, default: 0 },
+      savings: { type: Number, default: 0 },
     },
 
     grandTotal: { type: Number, required: true },
@@ -55,7 +55,7 @@ const orderSchema = new mongoose.Schema(
     payment: {
       method: {
         type: String,
-        enum: ["esewa", "khalti"],
+        enum: ["esewa", "khalti", "fonepay"],
         required: true,
       },
       status: {
@@ -75,13 +75,9 @@ const orderSchema = new mongoose.Schema(
       default: "pending",
     },
 
-    note: {
-      type: String,
-      trim: true,
-      default: null,
-    },
+    note: { type: String, trim: true, default: null },
   },
-  { timestamps: true },
+  { timestamps: true }
 );
 
 const Order = mongoose.model("Order", orderSchema);

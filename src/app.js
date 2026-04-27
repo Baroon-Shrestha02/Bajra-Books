@@ -8,6 +8,7 @@ import bookRoutes from "./Routes/BooksRoutes.js";
 import offerRoutes from "./Routes/OfferRoutes.js";
 import cartRoutes from "./Routes/CartRoutes.js";
 import orderRoutes from "./Routes/OrderRoutes.js";
+import promoRoutes from "./Routes/PromoRoutes.js";
 import swaggerUi from "swagger-ui-express";
 import { readFileSync, existsSync } from "fs";
 import { fileURLToPath } from "url";
@@ -56,6 +57,7 @@ app.use("/api", bookRoutes);
 app.use("/api", offerRoutes);
 app.use("/api", cartRoutes);
 app.use("/api", orderRoutes);
+app.use("/api", promoRoutes);
 
 app.use(GlobalErrorHandler);
 

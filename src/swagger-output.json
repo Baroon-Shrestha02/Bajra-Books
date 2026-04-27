@@ -50,6 +50,10 @@
     {
       "name": "User",
       "description": "User profile and account"
+    },
+    {
+      "name": "Promo",
+      "description": "Promo code management"
     }
   ],
   "paths": {
@@ -781,17 +785,27 @@
                   "city": {
                     "type": "string"
                   },
-                  "street": {
+                  "tole": {
+                    "type": "string"
+                  },
+                  "landmark": {
+                    "type": "string"
+                  },
+                  "houseNo": {
+                    "type": "string"
+                  },
+                  "alternativePhone": {
                     "type": "string"
                   },
                   "paymentMethod": {
                     "type": "string",
                     "enum": [
                       "esewa",
-                      "khalti"
+                      "khalti",
+                      "fonepay"
                     ]
                   },
-                  "alternativePhone": {
+                  "couponCode": {
                     "type": "string"
                   },
                   "screenshot": {
@@ -819,6 +833,22 @@
         "security": [
           {
             "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "status",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "pending",
+                "confirmed",
+                "dispatched",
+                "delivered",
+                "cancelled"
+              ]
+            }
           }
         ],
         "responses": {
@@ -861,7 +891,20 @@
               "type": "string",
               "enum": [
                 "esewa",
-                "khalti"
+                "khalti",
+                "fonepay"
+              ]
+            }
+          },
+          {
+            "in": "query",
+            "name": "paymentStatus",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "unpaid",
+                "paid",
+                "rejected"
               ]
             }
           },
@@ -981,6 +1024,143 @@
             }
           }
         },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/promo/create": {
+      "post": {
+        "tags": [
+          "Promo"
+        ],
+        "summary": "Create promo code (admin)",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  },
+                  "couponCode": {
+                    "type": "string"
+                  },
+                  "discount": {
+                    "type": "number"
+                  },
+                  "maxUses": {
+                    "type": "number"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Created"
+          }
+        }
+      }
+    },
+    "/promo/all": {
+      "get": {
+        "tags": [
+          "Promo"
+        ],
+        "summary": "Get all promo codes (admin)",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/promo/{id}": {
+      "patch": {
+        "tags": [
+          "Promo"
+        ],
+        "summary": "Update promo code (admin)",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  },
+                  "discount": {
+                    "type": "number"
+                  },
+                  "maxUses": {
+                    "type": "number"
+                  },
+                  "isActive": {
+                    "type": "boolean"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Promo"
+        ],
+        "summary": "Delete promo code (admin)",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "OK"

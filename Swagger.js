@@ -44,6 +44,7 @@ const options = {
       { name: "Cart", description: "Cart management" },
       { name: "Orders", description: "Order management" },
       { name: "User", description: "User profile and account" },
+      { name: "Promo", description: "Promo code management" },
     ],
   },
   apis: [path.join(__dirname, "./src/Routes/*.js")],

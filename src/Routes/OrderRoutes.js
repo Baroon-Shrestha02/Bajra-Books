@@ -30,12 +30,18 @@ const router = express.Router();
  *                 type: string
  *               city:
  *                 type: string
- *               street:
+ *               tole:
+ *                 type: string
+ *               landmark:
+ *                 type: string
+ *               houseNo:
+ *                 type: string
+ *               alternativePhone:
  *                 type: string
  *               paymentMethod:
  *                 type: string
- *                 enum: [esewa, khalti]
- *               alternativePhone:
+ *                 enum: [esewa, khalti, fonepay]
+ *               couponCode:
  *                 type: string
  *               screenshot:
  *                 type: string
@@ -54,6 +60,12 @@ router.post("/order/place", protect, placeOrder);
  *     summary: Get my orders
  *     security:
  *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: status
+ *         schema:
+ *           type: string
+ *           enum: [pending, confirmed, dispatched, delivered, cancelled]
  *     responses:
  *       200:
  *         description: OK
@@ -78,7 +90,12 @@ router.get("/order/get-my-orders", protect, getMyOrders);
  *         name: paymentMethod
  *         schema:
  *           type: string
- *           enum: [esewa, khalti]
+ *           enum: [esewa, khalti, fonepay]
+ *       - in: query
+ *         name: paymentStatus
+ *         schema:
+ *           type: string
+ *           enum: [unpaid, paid, rejected]
  *       - in: query
  *         name: page
  *         schema:
@@ -123,12 +140,7 @@ router.get("/order/all", protect, restrictTo("admin"), getAllOrders);
  *       200:
  *         description: OK
  */
-router.patch(
-  "/order/verify-payment/:id",
-  protect,
-  restrictTo("admin"),
-  verifyPayment,
-);
+router.patch("/order/verify-payment/:id", protect, restrictTo("admin"), verifyPayment);
 
 /**
  * @swagger
