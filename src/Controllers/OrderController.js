@@ -21,7 +21,7 @@ export const placeOrder = AsyncErrorHandler(async (req, res, next) => {
     landmark,
     houseNo,
     paymentMethod,
-    couponCode,     // ← fixed: was "promo" causing variable conflict
+    couponCode, // ← fixed: was "promo" causing variable conflict
   } = req.body;
 
   // ─── Validate ─────────────────────────────────────────────────────────────
@@ -30,8 +30,16 @@ export const placeOrder = AsyncErrorHandler(async (req, res, next) => {
     return next(new AppError("district, city and tole are required.", 400));
   }
 
-  if (!paymentMethod || !["esewa", "khalti", "fonepay"].includes(paymentMethod)) {
-    return next(new AppError("Payment method must be 'esewa', 'khalti' or 'fonepay'.", 400));
+  if (
+    !paymentMethod ||
+    !["esewa", "khalti", "fonepay"].includes(paymentMethod)
+  ) {
+    return next(
+      new AppError(
+        "Payment method must be 'esewa', 'khalti' or 'fonepay'.",
+        400,
+      ),
+    );
   }
 
   if (!req.files?.screenshot) {
@@ -52,10 +60,16 @@ export const placeOrder = AsyncErrorHandler(async (req, res, next) => {
 
   for (const item of cart.books) {
     const book = item.bookId;
-    if (!book) return next(new AppError("One or more books in cart no longer exist.", 400));
+    if (!book)
+      return next(
+        new AppError("One or more books in cart no longer exist.", 400),
+      );
     if (item.quantity > book.stock) {
       return next(
-        new AppError(`"${book.title}" only has ${book.stock} item(s) left. Please update your cart.`, 400)
+        new AppError(
+          `"${book.title}" only has ${book.stock} item(s) left. Please update your cart.`,
+          400,
+        ),
       );
     }
   }
@@ -64,7 +78,9 @@ export const placeOrder = AsyncErrorHandler(async (req, res, next) => {
 
   const books = cart.books.map((item) => {
     const book = item.bookId;
-    const effectivePrice = book.offer?.isOnOffer ? book.offer.offerPrice : book.price;
+    const effectivePrice = book.offer?.isOnOffer
+      ? book.offer.offerPrice
+      : book.price;
     return {
       bookId: book._id,
       title: book.title,
@@ -78,9 +94,17 @@ export const placeOrder = AsyncErrorHandler(async (req, res, next) => {
 
   // ─── Calculate Weight & Delivery ─────────────────────────────────────────
 
-  const totalWeight = books.reduce((acc, item) => acc + item.weight * item.quantity, 0);
-  const { zone, deliveryCharge } = calculateDeliveryCharge(district, totalWeight);
-  const totalPrice = parseFloat(books.reduce((acc, item) => acc + item.subtotal, 0).toFixed(2));
+  const totalWeight = books.reduce(
+    (acc, item) => acc + item.weight * item.quantity,
+    0,
+  );
+  const { zone, deliveryCharge } = calculateDeliveryCharge(
+    district,
+    totalWeight,
+  );
+  const totalPrice = parseFloat(
+    books.reduce((acc, item) => acc + item.subtotal, 0).toFixed(2),
+  );
 
   let grandTotal = parseFloat((totalPrice + deliveryCharge).toFixed(2));
 
@@ -89,15 +113,22 @@ export const placeOrder = AsyncErrorHandler(async (req, res, next) => {
   let promoDetails = { code: null, discount: 0, savings: 0 };
 
   if (couponCode) {
-    const promoDoc = await Promo.findOne({ couponCode: couponCode.toUpperCase() });
+    const promoDoc = await Promo.findOne({
+      couponCode: couponCode.toUpperCase(),
+    });
 
     if (!promoDoc) return next(new AppError("Invalid promo code.", 400));
-    if (!promoDoc.isActive) return next(new AppError("Promo code is no longer active.", 400));
+    if (!promoDoc.isActive)
+      return next(new AppError("Promo code is no longer active.", 400));
     if (promoDoc.maxUses !== null && promoDoc.usedCount >= promoDoc.maxUses) {
-      return next(new AppError("Promo code has reached its maximum uses.", 400));
+      return next(
+        new AppError("Promo code has reached its maximum uses.", 400),
+      );
     }
 
-    const savings = parseFloat((grandTotal * promoDoc.discount / 100).toFixed(2));
+    const savings = parseFloat(
+      ((grandTotal * promoDoc.discount) / 100).toFixed(2),
+    );
     grandTotal = parseFloat((grandTotal - savings).toFixed(2));
 
     promoDetails = {
@@ -113,7 +144,8 @@ export const placeOrder = AsyncErrorHandler(async (req, res, next) => {
   // ─── Upload Screenshot ────────────────────────────────────────────────────
 
   const uploaded = await uploadImages(req.files.screenshot);
-  if (!uploaded?.url) return next(new AppError("Screenshot upload failed.", 500));
+  if (!uploaded?.url)
+    return next(new AppError("Screenshot upload failed.", 500));
 
   // ─── Create Order ─────────────────────────────────────────────────────────
 
@@ -329,5 +361,25 @@ export const updateOrder = AsyncErrorHandler(async (req, res, next) => {
     success: true,
     message: `Order ${status} successfully.`,
     order,
+  });
+});
+
+export const validateCoupon = AsyncErrorHandler(async (req, res, next) => {
+  const { couponCode } = req.body;
+
+  if (!couponCode) return next(new AppError("couponCode is required.", 400));
+
+  const promo = await Promo.findOne({ couponCode: couponCode.toUpperCase() });
+
+  if (!promo) return next(new AppError("Invalid promo code.", 400));
+  if (!promo.isActive)
+    return next(new AppError("Promo code is no longer active.", 400));
+  if (promo.maxUses !== null && promo.usedCount >= promo.maxUses)
+    return next(new AppError("Promo code has reached its maximum uses.", 400));
+
+  res.status(200).json({
+    success: true,
+    code: promo.couponCode,
+    discount: promo.discount, // percentage e.g. 50
   });
 });

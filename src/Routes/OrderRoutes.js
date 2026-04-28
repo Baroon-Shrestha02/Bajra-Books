@@ -5,6 +5,7 @@ import {
   getMyOrders,
   placeOrder,
   updateOrder,
+  validateCoupon,
   verifyPayment,
 } from "../Controllers/OrderController.js";
 import { restrictTo } from "../Middlewares/RestictAccess.js";
@@ -140,7 +141,12 @@ router.get("/order/all", protect, restrictTo("admin"), getAllOrders);
  *       200:
  *         description: OK
  */
-router.patch("/order/verify-payment/:id", protect, restrictTo("admin"), verifyPayment);
+router.patch(
+  "/order/verify-payment/:id",
+  protect,
+  restrictTo("admin"),
+  verifyPayment,
+);
 
 /**
  * @swagger
@@ -173,5 +179,28 @@ router.patch("/order/verify-payment/:id", protect, restrictTo("admin"), verifyPa
  *         description: OK
  */
 router.patch("/order/update/:id", protect, restrictTo("admin"), updateOrder);
+
+/**
+ * @swagger
+ * /order/validate-coupon:
+ *   post:
+ *     tags: [Orders]
+ *     summary: Validate coupon code
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               couponCode:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: OK
+ */
+router.post("/order/validate-coupon", protect, validateCoupon);
 
 export default router;

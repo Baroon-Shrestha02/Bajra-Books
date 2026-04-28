@@ -3,3 +3,4 @@ const AsyncErrorHandler = (fn) => (req, res, next) => {
 };
 
 export default AsyncErrorHandler;
+
