@@ -1031,6 +1031,39 @@
         }
       }
     },
+    "/order/validate-coupon": {
+      "post": {
+        "tags": [
+          "Orders"
+        ],
+        "summary": "Validate coupon code",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "couponCode": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
     "/promo/create": {
       "post": {
         "tags": [
