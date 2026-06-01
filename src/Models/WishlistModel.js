@@ -16,7 +16,7 @@ const wishSchema = new mongoose.Schema(
   { timestamps: true },
 );
 
-// wishSchema.index({ userId: 1, productId: 1 }, { unique: true });
+wishSchema.index({ userId: 1, productId: 1 }, { unique: true });
 
 const Wishlist = mongoose.model("Wishlist", wishSchema);
 

@@ -1,26 +1,18 @@
-// ─── BooksSchema ─────────────────────────────────────────────────────────────
-
 import mongoose from "mongoose";
 
-const GENRES = [
-  "fiction",
-  "romance",
-  "action",
-  "thriller",
-  "horror",
-  "fantasy",
-  "biography",
-  "self-help",
-  "other",
-];
 const CATEGORIES = ["best-selling", "new-arrivals", "general"];
+
+const LANGUAGES = ["nepali", "english"];
 
 const BooksSchema = new mongoose.Schema(
   {
     author: {
-      type: String,
+      type: [String],
       required: true,
-      trim: true,
+      validate: {
+        validator: (arr) => Array.isArray(arr) && arr.length > 0,
+        message: "At least one author is required",
+      },
     },
     isbn: {
       type: String,
@@ -36,6 +28,18 @@ const BooksSchema = new mongoose.Schema(
     description: {
       type: String,
       required: true,
+      trim: true,
+    },
+    publisher: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+    language: {
+      type: String,
+      enum: LANGUAGES,
+      required: true,
+      lowercase: true,
       trim: true,
     },
     original_price: {
@@ -71,8 +75,12 @@ const BooksSchema = new mongoose.Schema(
       },
     },
     genre: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Genre",
+      required: true,
+    },
+    sub_genre: {
       type: String,
-      enum: GENRES,
       required: true,
       lowercase: true,
       trim: true,
@@ -94,8 +102,20 @@ const BooksSchema = new mongoose.Schema(
   { timestamps: true },
 );
 
+// Normalize author entries (trim + drop empties + dedupe within the same book)
+BooksSchema.pre("validate", function () {
+  if (Array.isArray(this.author)) {
+    this.author = [
+      ...new Set(
+        this.author
+          .map((a) => (typeof a === "string" ? a.trim() : ""))
+          .filter(Boolean),
+      ),
+    ];
+  }
+});
+
 BooksSchema.pre("save", async function () {
-  // no next param — just return/await normally
   this.price = parseFloat(
     (this.original_price * (1 - this.discount / 100)).toFixed(2),
   );
@@ -108,6 +128,9 @@ BooksSchema.pre("save", async function () {
     this.offer.offerPrice = null;
   }
 });
+
+// Helpful index for "list all unique sub_genres under a genre" queries
+BooksSchema.index({ genre: 1, sub_genre: 1 });
 
 const Books = mongoose.model("Books", BooksSchema);
 export default Books;

@@ -1,9 +1,13 @@
 import express from "express";
 import {
   addBooks,
+  cleanupEmptyGenres,
   deleteBook,
   getBooks,
+  getGenres,
+  getSubGenres,
   getWishlist,
+  migrateGenres,
   updateBook,
   wishList,
 } from "../Controllers/Books/BooksConroller.js";
@@ -11,6 +15,73 @@ import { protect } from "../Middlewares/VerifyUser.js";
 import { restrictTo } from "../Middlewares/RestictAccess.js";
 
 const router = express.Router();
+
+/**
+ * @swagger
+ * /book/sub-genres:
+ *   get:
+ *     tags: [Books]
+ *     summary: Get distinct sub-genres (optionally filtered by genre)
+ *     parameters:
+ *       - in: query
+ *         name: genre
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: OK
+ */
+router.get("/book/sub-genres", getSubGenres);
+
+/**
+ * @swagger
+ * /book/genres:
+ *   get:
+ *     tags: [Books]
+ *     summary: Get all genres with counts and sub-genre breakdown
+ *     responses:
+ *       200:
+ *         description: OK
+ */
+router.get("/book/genres", getGenres);
+
+/**
+ * @swagger
+ * /book/genres/migrate:
+ *   post:
+ *     tags: [Books]
+ *     summary: Backfill existing string-genre books into Genre collection (admin)
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: OK
+ */
+router.post(
+  "/book/genres/migrate",
+  protect,
+  restrictTo("admin"),
+  migrateGenres,
+);
+
+/**
+ * @swagger
+ * /book/genres/cleanup:
+ *   post:
+ *     tags: [Books]
+ *     summary: Delete Genre docs with zero books (admin)
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: OK
+ */
+router.post(
+  "/book/genres/cleanup",
+  protect,
+  restrictTo("admin"),
+  cleanupEmptyGenres,
+);
 
 /**
  * @swagger
@@ -207,5 +278,8 @@ router.post("/book/add-fav/:id", protect, restrictTo("user"), wishList);
  *         description: OK
  */
 router.get("/book/get-fav", protect, restrictTo("user"), getWishlist);
+
+router.get("/book/genre", getGenres);
+router.get("/book/migrate", migrateGenres);
 
 export default router;

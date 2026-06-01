@@ -28,7 +28,7 @@ const orderSchema = new mongoose.Schema(
       {
         bookId: { type: mongoose.Schema.Types.ObjectId, ref: "Books" },
         title: { type: String, required: true },
-        author: { type: String, required: true },
+        author: { type: [String], required: true },
         price: { type: Number, required: true },
         quantity: { type: Number, required: true },
         subtotal: { type: Number, required: true },

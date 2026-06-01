@@ -3,20 +3,20 @@ import User from "../Models/UserModel.js";
 
 const createAdminIfNotExists = async () => {
   try {
-    const adminExists = await User.findOne({ email: "admin@gmail.com" });
+    const adminExists = await User.findOne({ email: "bajraadmin@gmail.com" });
 
     if (adminExists) {
       console.log("Admin already exists");
       return;
     }
 
-    const hashedPassword = await bcrypt.hash("admin123", 10);
+    const hashedPassword = await bcrypt.hash("bajraadmin123", 10);
 
     await User.create({
       firstname: "Bajra",
       lastname: "Admin",
-      phone: "98123458",
-      email: "admin@gmail.com",
+      phone: "1234567812",
+      email: "bajraadmin@gmail.com",
       password: hashedPassword,
       role: "admin",
     });

@@ -32,13 +32,34 @@ if (existsSync(swaggerPath)) {
 
 // ─── Middlewares ──────────────────────────────────────────────────────────────
 
+const allowedOrigins = [
+  /^http:\/\/localhost(:\d+)?$/, // matches localhost:3000, :3001, :5173, etc.
+  "https://bajrabooks.com",
+  "https://www.bajrabooks.com",
+  "https://api.bajrabooks.com",
+  "https://bajrabarahibooks.com",
+  "https://www.bajrabarahibooks.com",
+];
+
 app.use(
   cors({
-    origin: "*",
-    allowedHeaders: ["Content-Type", "Authorization"],
+    origin: function (origin, callback) {
+      // Allow requests with no origin (Postman, mobile apps, curl)
+      if (!origin) return callback(null, true);
+
+      const allowed = allowedOrigins.some((o) =>
+        typeof o === "string" ? o === origin : o.test(origin),
+      );
+
+      if (allowed) {
+        callback(null, true);
+      } else {
+        callback(new Error(`CORS blocked: ${origin}`));
+      }
+    },
+    credentials: true,
   }),
 );
-
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
